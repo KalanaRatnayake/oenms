@@ -1,0 +1,16 @@
+map:
+  rootRobot                   :   "qbot2"
+  resolution                  :   0.02
+  unexploredPercentage        :   0.95
+  sideBlockCount              :   10.0
+  minScanRange                :   0.70
+
+area:
+  front                       :   9.50
+  back                        :   0.50
+  left                        :   7.50    #5.5
+  right                       :   2.50    #4.5
+  height                      :   0.50
+
+evaluator:
+  exploration                 :   "/home/kalana-laptop/Desktop/exploration.txt"

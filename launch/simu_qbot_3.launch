@@ -1,0 +1,70 @@
+<launch>
+    <arg name="tf_prefix_" default="qbot3"/>
+
+    <group ns="$(arg tf_prefix_)">
+        <!-- load parameters -->
+        <rosparam command="load" file="$(find xavier)/param/simu_qbot.yaml"/>
+
+        <param name="area/front"                 value="6.0"/>
+        <param name="area/back"                  value="0.0"/>
+        <param name="area/left"                  value="1.0"/>
+        <param name="area/right"                 value="4.0"/>
+        <param name="area/height"                value="0.5"/>
+        <param name="map/frame"                  value="$(arg tf_prefix_)/map"/>
+        <param name="robot/name"                 value="$(arg tf_prefix_)"/>
+        <param name="robot/frame"                value="$(arg tf_prefix_)/base_link"/>
+        <param name="robot/initial/X"            value="1.5"/>
+        <param name="robot/initial/Y"            value="8.5"/>
+        <param name="robot/initial/Z"            value="0.0"/>
+        <param name="robot/initial/Roll"         value="0.0"/>
+        <param name="robot/initial/Pitch"        value="0.0"/>
+        <param name="robot/initial/Yaw"          value="0.0"/>
+        <param name="evaluator/performance"      value="/home/xavier/Desktop/accumilated_values_$(arg tf_prefix_).txt"/>
+
+        <!-- Start RTABMap localization -->
+        <include file="$(find xavier_slam)/launch/multi_qbot_slam.launch">
+            <arg name="tf_prefix_frame" value="$(arg tf_prefix_)"/>
+        </include>
+
+        <!-- Start Explore node -->
+        <node pkg="xavier_explore" type="xavier_explore_node" name="explore" output="screen" >
+            <remap from="octomap" to="octomap_full" />
+            <remap from="position" to="corrected_odom" />
+        </node>
+
+        <!-- Start Control node -->
+        <node pkg="xavier_control" type="xavier_control_qbot_node" name="control" output="screen">
+            <remap from="motor_power" to="mobile_base/commands/motor_power"/>
+		    <remap from="cmd_vel" to="mobile_base/commands/velocity"/>
+		    <remap from="position" to="corrected_odom" />
+		    <remap from="bumper" to="mobile_base/events/bumper" />
+        </node>
+
+        <!-- Start Position Tracker node -->
+        <node pkg="xavier_control" type="xavier_control_position_node" name="tracker" output="screen">
+            <remap from="positionIn" to="odom" />
+            <remap from="positionOut" to="corrected_odom" />
+        </node>
+
+        <!-- Start Planner node -->
+        <node pkg="xavier_planner" type="xavier_planner_node" name="planner" output="screen">
+            <remap from="octomap" to="octomap_full" />
+            <remap from="position" to="corrected_odom" />
+        </node>
+
+        <!-- Start Client node -->
+        <node pkg="xavier_coordinator" type="xavier_coordinator_client_node" name="client" output="screen" >
+            <remap from="pointCloud" to="cloud_map" />
+            <remap from="position" to="corrected_odom" />
+        </node>
+        
+        <!-- Evaluator node
+        <node pkg="xavier_evaluator" type="xavier_evaluator_performance_node" name="clientEvaluator" output="screen">
+            <remap from="odometry" to="odom" />
+            <remap from="imu" to="mobile_base/sensors/imu_data" />
+        </node> -->
+    </group>
+</launch>
+
+<!-- for debugging errors use launch-prefix="gdb -ex run -args" -->
+<!-- for debugging memory leaks use launch-prefix="valgrind" -->

@@ -1,0 +1,23 @@
+<launch>
+    <!-- load parameters -->
+    <rosparam command="load" file="$(find xavier)/param/simu_qbot.yaml"/>
+
+    <!-- Start RTABMap localization -->
+    <include file="$(find xavier_slam)/launch/single_qbot_slam.launch" />
+
+    <!-- Start Teleop localization -->
+    <include file="$(find kobuki_keyop)/launch/keyop.launch" />
+
+    <!-- Evaluator node -->
+    <node pkg="xavier_evaluator" type="xavier_evaluator_performance_node" name="clientEvaluator" output="screen">
+        <remap from="odometry" to="odom" />
+        <remap from="imu" to="mobile_base/sensors/imu_data" />
+    </node>
+
+    <node pkg="xavier_evaluator" type="xavier_evaluator_exploration_node" name="client2Evaluator" output="screen">
+        <remap from="octomap" to="/octomap_full" />
+    </node>
+</launch>
+
+<!-- for debugging errors use launch-prefix="gdb -ex run -args" -->
+<!-- for debugging memory leaks use launch-prefix="valgrind" -->

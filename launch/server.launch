@@ -1,0 +1,15 @@
+<launch>
+    <!-- load parameters -->
+    <rosparam command="load" file="$(find xavier)/param/server.yaml"/>
+
+    <!-- Server node -->
+    <node pkg="xavier_coordinator" type="xavier_coordinator_server_node" name="server" output="screen"/>
+
+    <!-- Evaluator node -->
+    <node pkg="xavier_evaluator" type="xavier_evaluator_exploration_node" name="serverEvaluator" output="screen">
+        <remap from="octomap" to="/server_octomap" />
+    </node>
+</launch>
+
+<!-- for debugging errors use launch-prefix="gdb -ex run -args" -->
+<!-- for debugging memory leaks use launch-prefix="valgrind" -->
